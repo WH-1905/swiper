@@ -1,5 +1,8 @@
 from lib.http import render_json
-from user.logic import send_verify_code
+from common import error
+from user.logic import send_verify_code,check_vcode
+from user.models import User
+
 
 
 
@@ -19,7 +22,7 @@ def login(request):
         user, created = User.objects.get_or_create(phonenum=phonenum)
         # 记录登录状态
         request.session['uid'] = user.id
-        return render_json(user.to_dict())
+        return render_json(user.to_dict(),0)
     else:
         return render_json(None, error.VCODE_ERROR)
 

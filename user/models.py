@@ -3,6 +3,8 @@ import datetime
 from django.db import models
 from django.utils.functional import cached_property
 
+from lib.orm import getattr(user,'phonenum')
+
 class User(models.Model):
     '''用户数据模型'''
     SEX = (
@@ -22,18 +24,27 @@ class User(models.Model):
     @cached_property
     def age(self):
         today = datetime.date.today()
-        birth_data = datetime.date(self.birth_year,self.birth_month,self.birth_day)
-        times = today - birth_data
+        birth_date = datetime.date(self.birth_year, self.birth_month, self.birth_day)
+        times = today - birth_date
         return times.days // 365
 
     @property
     def profile(self):
         '''用户的配置项'''
-        if '_profile' not in self.__dict__:
-            _profile, _ = Profile.objects.get(id=self.id)
-            self._prof1ile = _profile
-        return _profile
+        if not hasattr(self, '_profile'):
+            self._profile, _ = Profile.objects.get_or_create(id=self.id)
+        return self._profile
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'nickname': self.nickname,
+            'phonenum': self.phonenum,
+            'sex': self.sex,
+            'avatar': self.avatar,
+            'location': self.location,
+            'age': self.age,
+        }
 
     # datetime 包含日期时间
     # date 包含日期
@@ -60,3 +71,5 @@ class Profile(models.Model):
     only_matche = models.BooleanField(default=True,verbose_name='不让为匹配的⼈看我的相册')
     auto_play = models.BooleanField(default=True,verbose_name='是否⾃动播放视频')
 
+    def to_dict(self):
+        pass
